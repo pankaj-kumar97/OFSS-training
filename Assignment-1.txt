@@ -1,0 +1,199 @@
+CREATE TABLE Client_master(  
+    client_no VARCHAR(6),  
+    name VARCHAR(20) NOT NULL,  
+    address1 VARCHAR(30),  
+    address2 VARCHAR(30),  
+    city VARCHAR(15),  
+    state VARCHAR(15),  
+    pincode NUMBER(6),  
+    bal_due NUMBER(10,2),  
+    CONSTRAINT client_no_pk PRIMARY KEY(client_no),  
+    CONSTRAINT client_no_ck CHECK (client_no LIKE 'C%')  
+);
+DESC Client_master;
+
+
+
+CREATE TABLE product_master( 
+    product_no VARCHAR(6), 
+    description VARCHAR(50) NOT NULL, 
+    profit_percent NUMBER(3,2) NOT NULL, 
+    unit_of_measurement VARCHAR(10) DEFAULT 'Piece', 
+    unit_measure VARCHAR(10) NOT NULL, 
+    record_lvl NUMBER(8) NOT NULL, 
+    sell_price NUMBER(8,2) NOT NULL, 
+    cost_price NUMBER(8,2) NOT NULL, 
+    CONSTRAINT product_no_pk PRIMARY KEY(product_no), 
+    CONSTRAINT product_no_ck CHECK (product_no LIKE 'P%'), 
+    CONSTRAINT sell_price CHECK (sell_price>0), 
+    CONSTRAINT cost_price CHECK (cost_price>0) 
+);
+DESC product_master;
+
+
+
+CREATE TABLE salesman_master(
+    salesman_no VARCHAR2(6),
+    salesman_name VARCHAR2(20) NOT NULL,
+    Address1 VARCHAR2(30) NOT NULL,
+    Address2 VARCHAR2(30),
+    city VARCHAR2(20),
+    pincode VARCHAR2(6),
+    state VARCHAR2(20),
+    sal_amt NUMBER(8,2) NOT NULL,
+    tgt_to_get NUMBER(6,2) NOT NULL,
+    ytd_sales NUMBER(6,2) NOT NULL,
+    remarks VARCHAR2(60),
+    CONSTRAINT salesman_no_pk PRIMARY KEY(salesman_no), 
+    CONSTRAINT salesman_no_ck CHECK (salesman_no LIKE 'S%'), 
+    CONSTRAINT sal_amt CHECK (sal_amt>0), 
+    CONSTRAINT tgt_to_get CHECK (tgt_to_get>0)
+);
+DESC salesman_master;
+
+
+
+CREATE TABLE SALES_ORDER(
+    S_ORDER_NO VARCHAR2(6),
+    S_ORDER_DATE DATE,
+    CLIENT_NO VARCHAR2(6),
+    DELY_ADDR VARCHAR2(25),
+    SALESMAN_NO VARCHAR2(6),
+    DELY_TYPE CHAR(1) DEFAULT 'F',
+    BILLED_YN CHAR(1) DEFAULT 'N',
+    DELY_DATE DATE ,
+    ORDER_STATUS VARCHAR2(10),
+    CONSTRAINT SO_PK PRIMARY KEY(S_ORDER_NO),
+    CONSTRAINT S_CK CHECK(S_ORDER_NO LIKE 'O%'),
+    CONSTRAINT CNO_FK FOREIGN KEY(CLIENT_NO) REFERENCES CLIENT_MASTER(CLIENT_NO),
+    CONSTRAINT SNO_FK FOREIGN KEY(SALESMAN_NO) REFERENCES SALESMAN_MASTER(SALESMAN_NO),
+    CONSTRAINT DT_CK CHECK (DELY_TYPE IN ('P','F')),
+    CONSTRAINT BL_CK CHECK (BILLED_YN IN ('Y','N')),
+    CONSTRAINT DE_CK CHECK (DELY_DATE>= S_ORDER_DATE),
+    CONSTRAINT OS_CK CHECK (ORDER_STATUS IN('IN_PROCESS','FULFILLED','BACK_ORDER','CANCELED'))
+    );
+DESC SALES_ORDER;
+
+
+
+CREATE TABLE SALES_ORDER_DETAILS (
+    S_ORDER_NO VARCHAR2(6),
+    PRODUCT_NO VARCHAR2(6),
+    QTY_ORDERED NUMBER(8),
+    QTY_DISP NUMBER(8),
+    PRODUCT_RATE NUMBER(10,2),
+    CONSTRAINT SON_FK FOREIGN KEY(S_ORDER_NO) REFERENCES SALES_ORDER(S_ORDER_NO),
+    CONSTRAINT PN_FK FOREIGN KEY(PRODUCT_NO) REFERENCES PRODUCT_MASTER(PRODUCT_NO) 
+);
+DESC SALES_ORDER_DETAILS;
+
+
+
+CREATE TABLE CHALLAN_HEADER (
+    CHALLAN_NO VARCHAR2(6),
+    S_ORDER_NO VARCHAR2(6),
+    CHALLAN_DATE DATE NOT NULL,
+    BILLED_YN CHAR(1) DEFAULT'N',
+    CONSTRAINT CN_PK PRIMARY KEY(CHALLAN_NO),
+    CONSTRAINT SO_FK FOREIGN KEY(S_ORDER_NO) REFERENCES SALES_ORDER(S_ORDER_NO),
+    CONSTRAINT CN_CH CHECK (CHALLAN_NO LIKE 'CH%'),
+    CONSTRAINT BY_CH CHECK (BILLED_YN IN ('Y','N'))  
+);
+DESC CHALLAN_HEADER;
+
+
+
+INSERT INTO client_master(client_no, name, city, pincode,state,bal_due)
+VALUES('C00001','Ivan Bayross','Bombay',400054,'Maharashtra',15000);
+INSERT INTO client_master(client_no, name, city, pincode,state,bal_due)
+VALUES('C00002','Vandana Saitwal','Madras',780001,'Tamil Nadu',0);
+INSERT INTO client_master(client_no, name, city, pincode,state,bal_due)
+VALUES('C00003','Pramada Jaguste','Bombay',400057,'Maharashtra',5000);
+INSERT INTO client_master(client_no, name, city, pincode,state,bal_due)
+VALUES('C00004','Basu Navindgi','Bombay',400056,'Maharashtra',0);
+INSERT INTO client_master(client_no, name, city, pincode,state,bal_due)
+VALUES('C00005','Ravi Sreedharan','Delhi',100001,'Delhi',2000);
+INSERT INTO client_master(client_no, name, city, pincode,state,bal_due)
+VALUES('C00006','Rukmini','Bombay',400050,'Maharashtra',0);
+
+
+
+INSERT INTO product_master VALUES('P00001','1.44 Floppies',5,'Piece',100,20,525,500);
+INSERT INTO product_master VALUES('P03453','Monitors',6,'Piece',10,3,12000,11280);
+INSERT INTO product_master VALUES('P06734','Mouse',5,'Piece',20,50,1050,1000);
+INSERT INTO product_master VALUES('P07865','1.22 Floppies',5,'Piece',100,20,525,500);
+INSERT INTO product_master VALUES('P07868','Keyboards',2,'Piece',10,3,3150,3050);
+INSERT INTO product_master VALUES('P07885','CD Drive',2.5,'Piece',10,3,5250,5100);
+INSERT INTO product_master VALUES('P07965','540 HDD',4,'Piece',10,3,8400,8000);
+INSERT INTO product_master VALUES('P07975','1.44 Drive',5,'Piece',10,3,1050,1000);
+INSERT INTO product_master VALUES('P08865','1.22 Drive',5,'Piece',2,3,1050,1000);
+
+
+
+INSERT INTO salesman_master VALUES('S00001','Kiran','A/14','Worli','Bombay',400002,'MAH',3000,100,50,'Good');
+INSERT INTO salesman_master VALUES('S00002','Manish','65','Nariman','Bombay',400001,'MAH',3000,200,100,'Good');
+INSERT INTO salesman_master VALUES('S00003','Ravi','P-7','Bandra','Bombay',400032,'MAH',3000,200,100,'Good');
+INSERT INTO salesman_master VALUES('S00004','Ashish','A/5','Juhu','Bombay',400044,'MAH',3500,200,150,'Good');
+
+
+
+INSERT INTO sales_order(s_order_no,s_order_date,client_no,dely_type,billed_Yn,salesman_no,dely_date,order_status)
+VALUES('O19001','12-Jan-1996','C00001','F','N','S00001','20-Jan-1996','in process');
+
+INSERT INTO sales_order(s_order_no,s_order_date,client_no,dely_type,billed_Yn,salesman_no,dely_date,order_status)
+VALUES('O19002','25-Jan-1996','C00002','P','N','S00002','27-Jan-1996','canceled');
+
+INSERT INTO sales_order(s_order_no,s_order_date,client_no,dely_type,billed_Yn,salesman_no,dely_date,order_status)
+VALUES('O46865','18-Feb-1996','C00003','F','Y','S00003','20-Feb-1996','fullfilled');
+
+INSERT INTO sales_order(s_order_no,s_order_date,client_no,dely_type,billed_Yn,salesman_no,dely_date,order_status)
+VALUES('O19003','03-Apr-1996','C00001','F','Y','S00001','07-Apr-1996','fullfilled');
+
+INSERT INTO sales_order(s_order_no,s_order_date,client_no,dely_type,billed_Yn,salesman_no,dely_date,order_status)
+VALUES('O46866','20-May-1996','C00004','P','N','S00002','22-May-1996','canceled');
+
+INSERT INTO sales_order(s_order_no,s_order_date,client_no,dely_type,billed_Yn,salesman_no,dely_date,order_status)
+VALUES('O10008','24-May-1996','C00005','F','N','S00004','26-May-1996','in process');
+
+
+
+INSERT INTO sales_order_details VALUES('O19001','P00001',4,4,525);
+INSERT INTO sales_order_details VALUES('O19001','P07965',2,1,8400);
+INSERT INTO sales_order_details VALUES('O19001','P07885',2,1,5250);
+INSERT INTO sales_order_details VALUES('O19002','P00001',10,0,525);
+INSERT INTO sales_order_details VALUES('O46865','P07868',3,3,3150);
+INSERT INTO sales_order_details VALUES('O46865','P07885',3,1,5250);
+INSERT INTO sales_order_details VALUES('O46865','P00001',10,10,525);
+INSERT INTO sales_order_details VALUES('O46865','P03453',4,4,1050);
+INSERT INTO sales_order_details VALUES('O19003','P03453',2,2,1050);
+INSERT INTO sales_order_details VALUES('O19003','P06734',1,1,12000);
+INSERT INTO sales_order_details VALUES('O46866','P07965',1,0,8400);
+INSERT INTO sales_order_details VALUES('O46866','P07975',1,0,1050);
+INSERT INTO sales_order_details VALUES('O19003','P00001',10,4,525);
+INSERT INTO sales_order_details VALUES('O19003','P07975',5,3,1050);
+
+
+
+INSERT INTO challan_header VALUES('CH9001','O19001','12-Dec-1995','Y');
+INSERT INTO challan_header VALUES('CH6865','O46865','12-Nov-1995','Y');
+INSERT INTO challan_header VALUES('CH3965','O10008','12-Oct-1995','Y');
+
+
+INSERT INTO challan_details VALUES('CH9001','P00001',4);
+INSERT INTO challan_details VALUES('CH9001','P07965',1);
+INSERT INTO challan_details VALUES('CH9001','P07885',1);
+INSERT INTO challan_details VALUES('CH6865','P07868',3);
+INSERT INTO challan_details VALUES('CH6865','P03453',4);
+INSERT INTO challan_details VALUES('CH6865','P00001',10);
+INSERT INTO challan_details VALUES('CH3965','P00001',5);
+INSERT INTO challan_details VALUES('CH3965','P07975',2);
+
+
+
+SELECT * FROM Client_master;
+SELECT * FROM product_master;
+SELECT * FROM salesman_master;
+SELECT * FROM sales_order;
+SELECT * FROM sales_order_details;
+SELECT * FROM Challan_header;
+SELECT * FROM Challan_details;
